@@ -1,0 +1,68 @@
+---
+title: "explore"
+author: "Patrick Sadil"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{explore}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE,
+  echo = FALSE
+)
+library(visr)
+
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+Conditions = c('Not Studied','CFS, Image', 'Binocular, Image')
+
+```
+
+
+```{r naming}
+
+d %>%
+  dplyr::filter(phase == "name" & rep == 1) %>%
+  dplyr::group_by(participant, condition) %>%
+  dplyr::summarise(correct = sum(correct, na.rm = TRUE) / n()) %>%
+  ggplot(aes(x = condition, y=correct, color = condition)) +
+  stat_summary(fun.data="mean_se") +
+  scale_y_continuous(limits = c(0,1), name = "Naming Accuracy") +
+  scale_x_discrete(name = NULL, label = element_blank()) +
+  scale_color_manual(values = cbPalette, name= "Condition")
+
+
+```
+
+
+
+```{r pas}
+
+d %>%
+  dplyr::select(condition, expt, phase, pas, rep) %>%
+  na.omit() %>%
+  dplyr::filter(condition  == "CFS" & expt == "visualRecollection" & phase == "study") %>%
+  ggplot(aes(x = pas, fill = pas)) +
+  facet_grid(. ~ rep) +
+  geom_bar()
+  
+d %>%
+  dplyr::select(participant, condition, expt, phase, pas) %>%
+  na.omit() %>%
+  dplyr::filter(condition  == "CFS" & expt == "visualRecollection" & phase == "study") %>%
+  dplyr::mutate(pas = as.character(pas),
+                pas = dplyr::if_else(pas == "NA", "NO RESPONSE", pas)) %>%
+  ggplot(aes(x = pas, fill = pas)) +
+  geom_bar() +
+  facet_wrap(~participant, nrow = 6)
+
+
+
+``` 
+
